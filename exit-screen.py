@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+import os
 import sys
 import subprocess
 from PIL import ImageTk, Image
@@ -17,7 +20,7 @@ class PowerControls:
         elif name == "restart":
             return self.restart
         elif name == "sleep":
-            pass
+            return self.sleep
         elif name == "logout":
             return self.logout
         elif name == "lock":
@@ -37,21 +40,24 @@ class PowerControls:
     def logout(self, event):
         subprocess.call(["i3-msg", "exit"])
 
+    def sleep(self, event):
+        subprocess.call(["i3lock"])
+        subprocess.call(["systemctl", "suspend"])
+        sys.exit()
+
 
 class ExitScreen:
 
     def __init__(self):
         self.define_constants()
-
         self.tk = Tk()
         self.tk.title(self.title)
         self.frame = Frame(master=self.tk, background=self.background_color)
-        self.frame.place(relx=.5, rely=.5, anchor="c")
-        self.tk.wait_visibility(self.tk)
-
         self.set_buttons()
         self.bind_keys()
+        self.tk.wait_visibility(self.tk)
         self.set_style()
+        self.frame.place(relx=.5, rely=.5, anchor="c")
 
     def define_constants(self):
         self.background_color = "#202020"
@@ -65,6 +71,12 @@ class ExitScreen:
     
     def bind_keys(self):
         self.tk.bind("<Escape>", self.destroy)
+        self.tk.bind("<s>", self.get_power_function("shutdown"))
+        self.tk.bind("<r>", self.get_power_function("restart"))
+        self.tk.bind("<h>", self.get_power_function("sleep"))
+        self.tk.bind("<q>", self.get_power_function("logout"))
+        self.tk.bind("<l>", self.get_power_function("lock"))
+        self.tk.bind("<Button>", self.destroy)
     
     def get_power_function(self, name):
         power_controls = PowerControls()
@@ -74,18 +86,17 @@ class ExitScreen:
         return self.destroy
     
     def set_buttons(self):
-        # img = ImageTk.PhotoImage(file="icons/lock.png")
-        window = self.tk
         power_options = ["shutdown", "restart", "sleep", "logout", "lock"]
+        dir_path = os.path.dirname(os.path.realpath(__file__))
         for i in range(len(power_options)):
             power_option = power_options[i]
 
-            window.columnconfigure(i)
-            window.rowconfigure(1)
+            self.tk.columnconfigure(i)
+            self.tk.rowconfigure(1)
             frame = Frame(master=self.frame)
             frame.grid(row=1, column=i, padx=40)
-            
-            img = ImageTk.PhotoImage(ImageTk.Image.open("icons/" + power_option + ".png").resize(self.icon_size))
+            image_path = os.path.join(dir_path, "icons", power_option + ".png")
+            img = ImageTk.PhotoImage(ImageTk.Image.open(image_path).resize(self.icon_size))
             lab = Label(
                 frame,
                 background=self.background_color,
