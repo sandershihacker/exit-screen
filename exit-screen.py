@@ -61,7 +61,7 @@ class ExitScreen:
 
     def define_constants(self):
         self.background_color = "#202020"
-        self.icon_size = (72, 72)
+        self.icon_size = (60, 60)
         self.title = "Exit Screen"
 
     def set_style(self):
